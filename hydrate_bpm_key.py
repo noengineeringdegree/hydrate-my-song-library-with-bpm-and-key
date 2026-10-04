@@ -6,7 +6,8 @@ see https://getsongbpm.com/api). Values are for PLANNING crates before you buy.
 After download, rekordbox's own analysis is the source of truth.
 
 Usage (run on your own computer, Python 3.9+, no extra packages):
-    setx GETSONGBPM_API_KEY "your_key"     (Windows; then open a new terminal)
+    put GETSONGBPM_API_KEY=your_key in a .env file next to this script (gitignored),
+    or: setx GETSONGBPM_API_KEY "your_key"  (Windows; then open a new terminal)
     python hydrate_bpm_key.py              (default: up to 300 lookups this run)
     python hydrate_bpm_key.py --limit 50   (small test first)
 
@@ -28,6 +29,16 @@ def find_root(start):
             return p
     sys.exit("Can't find the Catalogue folder above this script. Set DJ_PROJECT_ROOT.")
 ROOT = find_root(HERE)
+
+def load_dotenv(path=HERE / ".env"):
+    """Fill missing env vars from a gitignored .env next to the script."""
+    if not path.exists():
+        return
+    for line in path.read_text(encoding="utf-8").splitlines():
+        k, sep, v = line.partition("=")
+        if sep and not k.strip().startswith("#"):
+            os.environ.setdefault(k.strip(), v.strip().strip('"\''))
+load_dotenv()
 MASTER = ROOT / "Catalogue" / "catalog_master.csv"
 OUT = ROOT / "agents downloads" / "catalog_enriched.csv"
 BASE = "https://api.getsong.co/search/"
